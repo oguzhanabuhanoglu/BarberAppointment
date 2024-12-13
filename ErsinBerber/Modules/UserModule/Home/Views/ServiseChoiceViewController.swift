@@ -10,6 +10,7 @@ import UIKit
 class ServiseChoiceViewController: UIViewController {
     
     private var selectedServiceView: ServiceOptionsView?
+    var barber: Barber?
     
     private let subtitleLabel: UILabel = {
         let label = UILabel()
@@ -54,6 +55,7 @@ class ServiseChoiceViewController: UIViewController {
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handlePriceViewTap(_:)))
             priceView.addGestureRecognizer(tapGesture)
         }
+        print(self.barber?.name)
         
         setupUI()
     }
@@ -90,13 +92,26 @@ class ServiseChoiceViewController: UIViewController {
         selectedServiceView = tappedView
     }
     
+    
     @objc func didTapContinue() {
-        let destinationVC = CreateAppointmentViewController()
+        guard let barber = barber, selectedServiceView != nil else {
+            self.makeAlert(title: "Upps 🧐", message: "Hizmet seçimi yapmayı unuttun.")
+            return
+        }
+        let destinationVC = CreateAppointmentViewController(barber: barber)
         navigationController?.pushViewController(destinationVC, animated: true)
     }
     
+    
     @objc func didTapBack() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    func makeAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okButton = UIAlertAction(title: "TAMAM", style: .default)
+        alert.addAction(okButton)
+        self.present(alert, animated: true)
     }
     
 }

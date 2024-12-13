@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import Combine
 
 class DatabaseManager {
     
@@ -30,6 +31,35 @@ class DatabaseManager {
     }
     
     
+//    // MARK: Get all barbers from firestore
+//    public func getAllBarbers(completion: @escaping ([Barber]?) -> Void) {
+//        let ref = database.collection("barbers")
+//        ref.getDocuments { snapshot, error in
+//            guard let barbers = snapshot?.documents.compactMap({ Barber(with: $0.data()) }), error == nil else {
+//                completion(nil)
+//                return
+//            }
+//            completion(barbers)
+//        }
+//    }
+    
+    public func getAllBarbers() -> AnyPublisher<[Barber], Error> {
+        let ref = database.collection("barbers")
+        
+        return Future { promise in
+            ref.getDocuments { snapshot, error in
+                if let error = error {
+                    promise(.failure(error)) // Error handling
+                } else if let snapshot = snapshot {
+                    let barbers = snapshot.documents.compactMap { Barber(with: $0.data()) }
+                    promise(.success(barbers)) // Success with barbers data
+                }
+            }
+        }
+        .eraseToAnyPublisher() // Return a publisher
+    }
+    
+    // MARK: Find specific barber and user fot authentication checks.
     public func findUser(with phoneNumber: String, completion: @escaping (User?) -> Void) {
         let ref = database.collection("users")
         ref.getDocuments { snapshot, error in
@@ -41,6 +71,7 @@ class DatabaseManager {
             completion(user)
         }
     }
+    
     
     public func findBarber(with phoneNumber: String, completion: @escaping (Barber?) -> Void) {
         let ref = database.collection("barbers")

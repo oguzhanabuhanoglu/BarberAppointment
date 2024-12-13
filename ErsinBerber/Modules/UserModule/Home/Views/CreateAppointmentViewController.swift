@@ -9,11 +9,23 @@ import UIKit
 
 class CreateAppointmentViewController: UIViewController {
     
-    let artistInfoView = BarberInfoView()
+    var barber: Barber
+    let barberInfoView: BarberInfoView
+    
     
     let dateLabel = SubtitleLabel(text: "Müsait Tarihler")
     let timeLabel = SubtitleLabel(text: "Müsait Saatler")
     
+    init(barber: Barber) {
+        self.barber = barber
+        self.barberInfoView = BarberInfoView(barber: barber)
+        super.init(nibName: nil, bundle: nil)
+        
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private let datePicker: UIDatePicker = {
         let picker = UIDatePicker()
@@ -47,7 +59,7 @@ class CreateAppointmentViewController: UIViewController {
     }
     
     func addSubviews() {
-        view.addSubview(artistInfoView)
+        view.addSubview(barberInfoView)
         view.addSubview(dateLabel)
         view.addSubview(datePicker)
         view.addSubview(timeLabel)
@@ -59,9 +71,9 @@ class CreateAppointmentViewController: UIViewController {
         let width = view.frame.width
         let height = view.frame.height
         
-        artistInfoView.frame = CGRect(x: width * 0.05, y: height * 0.12, width: width * 0.9, height: height * 0.17)
+        barberInfoView.frame = CGRect(x: width * 0.05, y: height * 0.12, width: width * 0.9, height: height * 0.17)
         
-        dateLabel.frame = CGRect(x: width * 0.04, y: artistInfoView.frame.maxY + 15, width: width * 0.92, height: 35)
+        dateLabel.frame = CGRect(x: width * 0.04, y: barberInfoView.frame.maxY + 15, width: width * 0.92, height: 35)
         
         NSLayoutConstraint.activate([
             datePicker.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 3),

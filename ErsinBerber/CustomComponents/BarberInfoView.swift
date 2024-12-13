@@ -10,6 +10,8 @@ import UIKit
 
 class BarberInfoView: UIView {
     
+    var barber: Barber
+    
     private let artistImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -64,10 +66,17 @@ class BarberInfoView: UIView {
     }()
     
     
-    init(/*image: UIImage, name: String*/) {
+    init(barber: Barber) {
+        self.barber = barber
         super.init(frame: .zero)
         layer.cornerRadius = 10
         backgroundColor = UIColor(red: 255/255, green: 214/255, blue: 10/255, alpha: 1.0)
+       
+        artistNameLabel.text = "\(barber.name) \(barber.surname)"
+        phoneNumberlabel.text = barber.phoneNumber
+        locationLabel.text = barber.address
+        workHoursLabel.text = barber.workingHours
+        
         
     }
     

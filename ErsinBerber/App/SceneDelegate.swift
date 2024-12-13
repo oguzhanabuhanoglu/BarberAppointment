@@ -29,7 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     if isBusinessAccount {
                         self.setRootViewController(BarberDashboardViewController()) // Berber için
                     } else {
-                        self.setRootViewController(ChooseArtistViewController()) // Kullanıcı için
+                        self.setRootViewController(ChooseBarberViewController()) // Kullanıcı için
                     }
                 }
             }
