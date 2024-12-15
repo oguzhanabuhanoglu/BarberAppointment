@@ -34,6 +34,14 @@ class BarberInfoView: UIView {
         return label
     }()
     
+    private let phoneImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "phone.down.circle")
+        imageView.tintColor = .black
+        imageView.layer.cornerRadius = 10
+        return imageView
+    }()
+    
     private let phoneNumberlabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
@@ -44,6 +52,13 @@ class BarberInfoView: UIView {
         return label
     }()
     
+    private let locationImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "location.circle")
+        imageView.tintColor = .black
+        imageView.layer.cornerRadius = 10
+        return imageView
+    }()
     
     private let locationLabel: UILabel = {
         let label = UILabel()
@@ -53,6 +68,14 @@ class BarberInfoView: UIView {
         label.numberOfLines = 1
         label.text = "İstanbul / Beşiktaş"
         return label
+    }()
+    
+    private let hoursImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "clock")
+        imageView.tintColor = .black
+        imageView.layer.cornerRadius = 10
+        return imageView
     }()
     
     private let workHoursLabel: UILabel = {
@@ -76,8 +99,6 @@ class BarberInfoView: UIView {
         phoneNumberlabel.text = barber.phoneNumber
         locationLabel.text = barber.address
         workHoursLabel.text = barber.workingHours
-        
-        
     }
     
     required init?(coder: NSCoder) {
@@ -98,13 +119,24 @@ class BarberInfoView: UIView {
         artistNameLabel.frame = CGRect(x: artistImageView.frame.maxX + 15, y: 15, width: width * 0.7, height: 25)
         addSubview(artistNameLabel)
         
-        phoneNumberlabel.frame = CGRect(x: artistImageView.frame.maxX + 15, y: artistNameLabel.frame.maxY + 5, width: width * 0.7, height: 25)
+        phoneImageView.frame = CGRect(x: artistImageView.frame.maxX + 15, y: artistNameLabel.frame.maxY + 5, width: 20, height: 20)
+        addSubview(phoneImageView)
+        
+        phoneNumberlabel.frame = CGRect(x: phoneImageView.frame.maxX + 5, y: artistNameLabel.frame.maxY + 5, width: width * 0.7, height: 25)
         addSubview(phoneNumberlabel)
         
-        locationLabel.frame = CGRect(x: artistImageView.frame.maxX + 15 , y: phoneNumberlabel.frame.maxY + 5, width: width * 0.7, height: 25)
+        
+        locationImageView.frame = CGRect(x: artistImageView.frame.maxX + 15, y: phoneNumberlabel.frame.maxY + 5, width: 20, height: 20)
+        addSubview(locationImageView)
+                   
+        locationLabel.frame = CGRect(x: locationImageView.frame.maxX + 5 , y: phoneNumberlabel.frame.maxY + 5, width: width * 0.7, height: 25)
         addSubview(locationLabel)
         
-        workHoursLabel.frame = CGRect(x: artistImageView.frame.maxX + 15 , y: locationLabel.frame.maxY + 5, width: width * 0.7, height: 25)
+        
+        hoursImageView.frame = CGRect(x: artistImageView.frame.maxX + 15, y: locationLabel.frame.maxY + 5, width: 20, height: 20)
+        addSubview(hoursImageView)
+        
+        workHoursLabel.frame = CGRect(x: hoursImageView.frame.maxX + 5, y: locationLabel.frame.maxY + 5, width: width * 0.7, height: 25)
         addSubview(workHoursLabel)
     }
 }
