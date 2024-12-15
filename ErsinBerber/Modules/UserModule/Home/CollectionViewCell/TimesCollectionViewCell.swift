@@ -11,12 +11,19 @@ class TimesCollectionViewCell: UICollectionViewCell {
     
     static let identifier = "TimesCollectionViewCell"
     
+    override var isSelected: Bool {
+           didSet {
+               timeLabel.backgroundColor = isSelected ? .mainYellow : .clear
+           }
+       }
+    
     private let timeLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         label.textAlignment = .center
+        label.backgroundColor = .clear
         label.numberOfLines = 1
-        label.backgroundColor = .black
         label.layer.borderWidth = 1
         label.layer.borderColor = UIColor.mainYellow.cgColor
         label.layer.cornerRadius = 8
@@ -25,10 +32,9 @@ class TimesCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super .init(frame: frame)
-        contentView.backgroundColor = .red
         contentView.clipsToBounds = true
+        contentView.layer.cornerRadius = 10
         contentView.addSubview(timeLabel)
-        
     }
     
     required init?(coder: NSCoder) {
