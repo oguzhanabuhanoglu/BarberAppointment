@@ -31,18 +31,6 @@ class DatabaseManager {
     }
     
     
-//    // MARK: Get all barbers from firestore
-//    public func getAllBarbers(completion: @escaping ([Barber]?) -> Void) {
-//        let ref = database.collection("barbers")
-//        ref.getDocuments { snapshot, error in
-//            guard let barbers = snapshot?.documents.compactMap({ Barber(with: $0.data()) }), error == nil else {
-//                completion(nil)
-//                return
-//            }
-//            completion(barbers)
-//        }
-//    }
-    
     public func getAllBarbers() -> AnyPublisher<[Barber], Error> {
         let ref = database.collection("barbers")
         
@@ -58,6 +46,7 @@ class DatabaseManager {
         }
         .eraseToAnyPublisher() // Return a publisher
     }
+    
     
     // MARK: Find specific barber and user fot authentication checks.
     public func findUser(with phoneNumber: String, completion: @escaping (User?) -> Void) {

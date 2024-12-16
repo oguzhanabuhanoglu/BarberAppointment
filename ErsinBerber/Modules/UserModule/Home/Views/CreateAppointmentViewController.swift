@@ -9,7 +9,9 @@ import UIKit
 
 class CreateAppointmentViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    // MARK: UI COMPONENTS
+    // MARK: - UI COMPONENTS
+    let scrollView = UIScrollView()
+    
     var barber: Barber
     let barberInfoView: BarberInfoView
     
@@ -32,6 +34,16 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     let timeLabel = SubtitleLabel(text: "Müsait Saatler")
     private var timesCollectionView: UICollectionView!
     
+    private let createButton: UIButton = {
+        let button = UIButton()
+        button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        button.setTitle("Randevu Al", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.backgroundColor = .mainYellow
+        button.layer.cornerRadius = 8
+        return button
+    }()
+    
     let workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
     
     init(barber: Barber) {
@@ -49,6 +61,15 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureNavigationBar()
+        addSubviews()
+        configureCollectionView()
+
+    }
+    
+    
+    // MARK: - Configure navigation bar
+    func configureNavigationBar() {
         view.backgroundColor = .black
         navigationController?.navigationBar.titleTextAttributes = [
             .foregroundColor: UIColor.white
@@ -60,18 +81,18 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(didTapBack))
         backButton.tintColor = .white
         navigationItem.leftBarButtonItem = backButton
-        
-        addSubviews()
-        configureCollectionView()
-
     }
     
-    // MARK: LAYOUTS
+    
+    // MARK: - SetupUI
     func addSubviews() {
-        view.addSubview(barberInfoView)
-        view.addSubview(dateLabel)
-        view.addSubview(datePicker)
-        view.addSubview(timeLabel)
+        scrollView.frame = view.bounds
+        view.addSubview(scrollView)
+        scrollView.addSubview(barberInfoView)
+        scrollView.addSubview(dateLabel)
+        scrollView.addSubview(datePicker)
+        scrollView.addSubview(timeLabel)
+        scrollView.addSubview(createButton)
     }
 
     override func viewDidLayoutSubviews() {
@@ -80,25 +101,29 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         let width = view.frame.width
         let height = view.frame.height
         
-        barberInfoView.frame = CGRect(x: width * 0.05, y: height * 0.12, width: width * 0.9, height: height * 0.17)
-        
-        dateLabel.frame = CGRect(x: width * 0.04, y: barberInfoView.frame.maxY + 15, width: width * 0.92, height: 35)
-        
+        barberInfoView.frame = CGRect(x: width * 0.05, y: height * 0.02, width: width * 0.9, height: height * 0.17)
+        dateLabel.frame = CGRect(x: width * 0.04, y: barberInfoView.frame.maxY + 20, width: width * 0.92, height: 35)
         NSLayoutConstraint.activate([
             datePicker.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 3),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             datePicker.heightAnchor.constraint(equalToConstant: 320)
         ])
+        timeLabel.frame = CGRect(x: width * 0.04, y: datePicker.frame.maxY + 20, width: width * 0.92, height: 35)
+        timesCollectionView.frame = CGRect(x: width * 0.05, y: timeLabel.frame.maxY + 3, width: width * 0.9, height: height * 0.1)
         
-        timeLabel.frame = CGRect(x: width * 0.04, y: datePicker.frame.maxY + 10, width: width * 0.92, height: 35)
+        createButton.addTarget(self, action: #selector(createAppointment), for: .touchUpInside)
+        createButton.frame = CGRect(x: width * 0.05, y: timesCollectionView.frame.maxY + 30, width: width * 0.9, height: 55)
         
-        timesCollectionView.frame = CGRect(x: width * 0.05, y: timeLabel.frame.maxY + 3, width: width * 0.9, height: height * 0.15)
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.contentSize = CGSize(width: width, height: createButton.frame.maxY + 20)
+        scrollView.backgroundColor = .black
     }
     
     
-    // MARK: CollectionView
+    // MARK: - CollectionView
     func configureCollectionView() {
+        
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumLineSpacing = 3
@@ -112,11 +137,9 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         timesCollectionView.dataSource = self
         timesCollectionView.allowsSelection = true
         
-        // Register cell
         timesCollectionView.register(TimesCollectionViewCell.self, forCellWithReuseIdentifier: TimesCollectionViewCell.identifier)
         
-        view.addSubview(timesCollectionView)
-        
+        scrollView.addSubview(timesCollectionView)
         
     }
     
@@ -136,7 +159,11 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         print("Seçilen saat: \(selectedTime)")
     }
 
+    // MARK: - Funcs
     
+    @objc func createAppointment() {
+        print("tapped")
+    }
     
     @objc func didTapBack() {
         navigationController?.popViewController(animated: true)

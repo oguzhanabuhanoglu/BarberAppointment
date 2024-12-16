@@ -14,6 +14,7 @@ class TimesCollectionViewCell: UICollectionViewCell {
     override var isSelected: Bool {
            didSet {
                timeLabel.backgroundColor = isSelected ? .mainYellow : .clear
+               timeLabel.textColor = isSelected ? .black : .white
            }
        }
     
