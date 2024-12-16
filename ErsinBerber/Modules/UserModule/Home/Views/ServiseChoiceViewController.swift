@@ -98,7 +98,13 @@ class ServiseChoiceViewController: UIViewController {
             self.makeAlert(title: "Upps 🧐", message: "Hizmet seçimi yapmayı unuttun.")
             return
         }
-        let destinationVC = CreateAppointmentViewController(barber: barber)
+        let appointment: Appointment = .init(barber: nil,
+                                                owner: nil,
+                                                service: selectedServiceView?.serviceLabel.text,
+                                                date: nil,
+                                                time: nil
+                                )
+        let destinationVC = CreateAppointmentViewController(barber: barber, newAppointment: appointment)
         navigationController?.pushViewController(destinationVC, animated: true)
     }
     

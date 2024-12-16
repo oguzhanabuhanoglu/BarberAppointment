@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class CreateAppointmentViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
@@ -13,6 +14,11 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     let scrollView = UIScrollView()
     
     var barber: Barber
+    var newAppointment: Appointment
+    private let workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
+    private var selectedDate: Date?
+    private var selectedTime: String?
+    
     let barberInfoView: BarberInfoView
     
     let dateLabel = SubtitleLabel(text: "Müsait Tarihler")
@@ -22,7 +28,6 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         picker.preferredDatePickerStyle = .inline
         picker.minimumDate = Date()
         picker.tintColor = .white
-        picker.overrideUserInterfaceStyle = .dark
         picker.locale = Locale(identifier: "tr_TR")
         picker.layer.borderWidth = 1
         picker.layer.borderColor = UIColor(red: 255/255, green: 214/255, blue: 10/255, alpha: 1.0).cgColor
@@ -43,10 +48,10 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         button.layer.cornerRadius = 8
         return button
     }()
+
     
-    let workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
-    
-    init(barber: Barber) {
+    init(barber: Barber, newAppointment: Appointment) {
+        self.newAppointment = newAppointment
         self.barber = barber
         self.barberInfoView = BarberInfoView(barber: barber)
         super.init(nibName: nil, bundle: nil)
@@ -58,6 +63,7 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     }
     
 
+    // MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -66,6 +72,7 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         configureCollectionView()
 
     }
+    
     
     
     // MARK: - Configure navigation bar
@@ -102,13 +109,16 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         let height = view.frame.height
         
         barberInfoView.frame = CGRect(x: width * 0.05, y: height * 0.02, width: width * 0.9, height: height * 0.17)
+        
         dateLabel.frame = CGRect(x: width * 0.04, y: barberInfoView.frame.maxY + 20, width: width * 0.92, height: 35)
+        datePicker.addTarget(self, action: #selector(didChangeDate), for: .valueChanged)
         NSLayoutConstraint.activate([
             datePicker.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 3),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             datePicker.heightAnchor.constraint(equalToConstant: 320)
         ])
+        
         timeLabel.frame = CGRect(x: width * 0.04, y: datePicker.frame.maxY + 20, width: width * 0.92, height: 35)
         timesCollectionView.frame = CGRect(x: width * 0.05, y: timeLabel.frame.maxY + 3, width: width * 0.9, height: height * 0.1)
         
@@ -156,17 +166,70 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedTime = workingHours[indexPath.row]
+        self.selectedTime = selectedTime
         print("Seçilen saat: \(selectedTime)")
     }
 
     // MARK: - Funcs
     
+    @objc func didChangeDate() {
+        let selectedDate = datePicker.date
+        self.selectedDate = selectedDate
+        print(selectedDate)
+        
+       
+//        fetchAvailableHours(for: selectedDate)
+    }
+    
     @objc func createAppointment() {
         print("tapped")
+        guard let userPhoneNumber = UserDefaults.standard.string(forKey: "phoneNumber") else {
+            print("Failed to find phone number in local")
+            return
+        }
+        
+        DatabaseManager.shared.findUser(with: userPhoneNumber) { [self] user in
+            guard let user = user else {
+                print("Failed find user")
+                return
+            }
+            
+            guard let selectedDate = selectedDate,
+                  let selectedTime = selectedTime else {
+                print("data or time is empty")
+                return
+            }
+            newAppointment.barber = self.barber
+            newAppointment.owner = user
+            newAppointment.date = selectedDate.toISOString()
+            newAppointment.time = selectedTime
+            
+            // appointment olustur
+            DatabaseManager.shared.createAppointment(newAppointment: newAppointment) { success in
+                if success {
+//                    let destinationVC = VerificationViewController()
+//                    destinationVC.modalPresentationStyle = .fullScreen
+//                    self.present(destinationVC, animated: true)
+                    print("SUCCESFULLY CREATED")
+                } else {
+                    print("Error: When creating appointment")
+                }
+            }
+            
+        }
+        
+        
     }
     
     @objc func didTapBack() {
         navigationController?.popViewController(animated: true)
+    }
+    
+    func createAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okButton = UIAlertAction(title: "TAMAM", style: .default)
+        alert.addAction(okButton)
+        self.present(alert, animated: true)
     }
     
     
@@ -174,13 +237,3 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
 }
 
 
-/*
- 
- datePicker.addTarget(self, action: #selector(didChangeDate), for: .valueChanged)
-
- @objc func didChangeDate() {
-     let selectedDate = datePicker.date
-     fetchAvailableHours(for: selectedDate)
- }
-
- */

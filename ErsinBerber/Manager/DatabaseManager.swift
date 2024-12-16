@@ -16,6 +16,7 @@ class DatabaseManager {
     
     private init() {}
     
+    // MARK: - Create user
     public func createNewUser(newUser: User, completion: @escaping (Bool) -> Void) {
         
         let userRef = database.collection("users").document(newUser.phoneNumber)
@@ -30,7 +31,7 @@ class DatabaseManager {
         }
     }
     
-    
+    // MARK: - Get all barbers
     public func getAllBarbers() -> AnyPublisher<[Barber], Error> {
         let ref = database.collection("barbers")
         
@@ -48,7 +49,8 @@ class DatabaseManager {
     }
     
     
-    // MARK: Find specific barber and user fot authentication checks.
+    
+    // MARK: - Find specific barber and user for authentication checks.
     public func findUser(with phoneNumber: String, completion: @escaping (User?) -> Void) {
         let ref = database.collection("users")
         ref.getDocuments { snapshot, error in
@@ -73,6 +75,22 @@ class DatabaseManager {
             let barber = barbers.first(where:{ $0.phoneNumber == phoneNumber})
             completion(barber)
         }
+    }
+    
+    // MARK: - Create Appointment
+    public func createAppointment(newAppointment: Appointment, completion: @escaping (Bool) -> Void) {
+        let appointmentRef = database.collection("appointments").document(newAppointment.date!)
+        
+        guard let data = newAppointment.asDictionary() else {
+            completion(false)
+            return
+        }
+        
+        appointmentRef.setData(data) { error in
+            completion(error == nil)
+        }
+        
+        
     }
 }
 

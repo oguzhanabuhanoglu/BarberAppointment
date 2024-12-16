@@ -8,5 +8,9 @@
 import Foundation
 
 struct Appointment: Codable {
-    
+    var barber: Barber?
+    var owner: User?
+    var service: String?
+    var date: String?
+    var time: String?
 }

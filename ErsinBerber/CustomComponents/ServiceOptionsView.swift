@@ -17,7 +17,7 @@ class ServiceOptionsView: UIView {
         return imageView
     }()
     
-    private let serviceLabel: UILabel = {
+    let serviceLabel: UILabel = {
         let label = UILabel()
         label.textColor = .white
         label.font = .systemFont(ofSize: 16)
