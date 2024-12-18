@@ -8,14 +8,17 @@
 import Foundation
 import Combine
 
-class HomeViewModel {
+class BarberChoiceViewModel {
+    
     @Published var barbers: [Barber] = []
     private var cancellables = Set<AnyCancellable>()
-
+    
+    @Published var appointments: [Appointment] = []
+    
     init() {
         getBarbers()
     }
-
+    
     func getBarbers() {
         DatabaseManager.shared.getAllBarbers()
             .receive(on: DispatchQueue.main)
@@ -31,5 +34,18 @@ class HomeViewModel {
             })
             .store(in: &cancellables)
     }
+    
+    
+    func getAppointmentsForBarber(barberName: String) {
+        // Barber name'e göre randevuları çekiyoruz
+        DatabaseManager.shared.getAppointmentsForBarber(barberName: barberName)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] appointments in
+                self?.appointments = appointments
+            }
+            .store(in: &cancellables)
+    }
+    
+    
 }
 

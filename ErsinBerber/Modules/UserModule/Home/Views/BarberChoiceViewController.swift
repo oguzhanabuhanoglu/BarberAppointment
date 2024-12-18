@@ -9,9 +9,9 @@ import UIKit
 import FirebaseAuth
 import Combine
 
-class ChooseBarberViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class BarberChoiceViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
     
-    private let viewModel = HomeViewModel()
+    private let viewModel = BarberChoiceViewModel()
     private var cancellables = Set<AnyCancellable>()
     
     private let subtitleLabel: UILabel = {
@@ -79,12 +79,18 @@ class ChooseBarberViewController: UIViewController, UICollectionViewDelegate, UI
         
         view.addSubview(collectionView)
         
+        subscribeToBarbers()
+    }
+    
+    
+    func subscribeToBarbers() {
         viewModel.$barbers
             .sink { [weak self] _ in
                 self?.collectionView.reloadData()
             }
             .store(in: &cancellables)
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print(viewModel.barbers.count)
@@ -99,6 +105,7 @@ class ChooseBarberViewController: UIViewController, UICollectionViewDelegate, UI
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        viewModel.barberName = viewModel.barbers[indexPath.row].name
         let destinationVC = ServiseChoiceViewController()
         destinationVC.barber = viewModel.barbers[indexPath.row]
         navigationController?.pushViewController(destinationVC, animated: true)
