@@ -7,15 +7,20 @@
 
 import UIKit
 import FirebaseAuth
+import Combine
 
 class CreateAppointmentViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+    
+    private var viewModel: CreateAppointmentViewModel!
+    private var cancellables = Set<AnyCancellable>()
+    private var appointments: [Appointment] = []
     
     // MARK: - UI COMPONENTS
     let scrollView = UIScrollView()
     
     var barber: Barber
     var newAppointment: Appointment
-    private let workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
+    private var workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
     private var selectedDate: Date?
     private var selectedTime: String?
     
@@ -28,6 +33,7 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         picker.preferredDatePickerStyle = .inline
         picker.minimumDate = Date()
         picker.tintColor = .white
+        picker.overrideUserInterfaceStyle = .dark
         picker.locale = Locale(identifier: "tr_TR")
         picker.layer.borderWidth = 1
         picker.layer.borderColor = UIColor(red: 255/255, green: 214/255, blue: 10/255, alpha: 1.0).cgColor
@@ -50,10 +56,13 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     }()
 
     
+    // MARK: - Lifecycle
     init(barber: Barber, newAppointment: Appointment) {
         self.newAppointment = newAppointment
         self.barber = barber
         self.barberInfoView = BarberInfoView(barber: barber)
+        self.viewModel = CreateAppointmentViewModel(barberName: barber.name)
+        self.selectedDate = Date()
         super.init(nibName: nil, bundle: nil)
         
     }
@@ -63,31 +72,31 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     }
     
 
-    // MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        subscribeToAppointments()
         configureNavigationBar()
         addSubviews()
         configureCollectionView()
-
+       
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        selectedDate = datePicker.date
+        didChangeDate() 
+    }
     
-    
-    // MARK: - Configure navigation bar
-    func configureNavigationBar() {
-        view.backgroundColor = .black
-        navigationController?.navigationBar.titleTextAttributes = [
-            .foregroundColor: UIColor.white
-        ]
-        navigationItem.title = "Randevu Oluştur"
-        navigationController?.navigationBar.prefersLargeTitles = false
-        navigationItem.largeTitleDisplayMode = .inline
-        
-        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(didTapBack))
-        backButton.tintColor = .white
-        navigationItem.leftBarButtonItem = backButton
+    private func subscribeToAppointments() {
+        viewModel.$appointments
+            .sink { [weak self] appointments in
+                self?.appointments = appointments
+                
+                
+                print("Fetceh appointments Count: \(appointments.count)")
+            }
+            .store(in: &cancellables)
     }
     
     
@@ -102,6 +111,7 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
         scrollView.addSubview(createButton)
     }
 
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -132,6 +142,21 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     
     
     // MARK: - CollectionView
+    func configureNavigationBar() {
+        view.backgroundColor = .black
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.white
+        ]
+        navigationItem.title = "Randevu Oluştur"
+        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationItem.largeTitleDisplayMode = .inline
+        
+        let backButton = UIBarButtonItem(image: UIImage(systemName: "chevron.left"), style: .plain, target: self, action: #selector(didTapBack))
+        backButton.tintColor = .white
+        navigationItem.leftBarButtonItem = backButton
+    }
+    
+    
     func configureCollectionView() {
         
         let layout = UICollectionViewFlowLayout()
@@ -171,55 +196,53 @@ class CreateAppointmentViewController: UIViewController, UICollectionViewDataSou
     }
 
     // MARK: - Funcs
-    
     @objc func didChangeDate() {
+        self.workingHours = ["11.00", "12.00", "13.00", "14.00", "15.00", "16.00", "17.00", "18.00", "19.00", "20.00"]
         let selectedDate = datePicker.date
         self.selectedDate = selectedDate
-        print(selectedDate)
-        
+        print("Selected Date: \(selectedDate)")
+
        
-//        fetchAvailableHours(for: selectedDate)
+        let filteredAppointments = appointments.filter { appointment in
+            print("all appointments: \(appointments.count)")
+            guard let appointmentDate = appointment.date?.toDate() else {
+                return false
+            }
+            return Calendar.current.isDate(appointmentDate, inSameDayAs: selectedDate)
+        }
+
+        // Map the available times
+        let unavailableTimes = filteredAppointments.map { $0.time }
+        print("Filtered appointments: \(filteredAppointments.count)")
+        let availableTimes = workingHours.filter { !unavailableTimes.contains($0) }
+        print("unavailable times: \(unavailableTimes)")
+
+        print("Unavailable Times: \(unavailableTimes)")
+        print("Available Times: \(availableTimes)")
+
+        // Update the CollectionView data source
+        self.workingHours = availableTimes
+        timesCollectionView.reloadData()
+        view.layoutIfNeeded()
+        view.setNeedsLayout()
     }
+
+    
     
     @objc func createAppointment() {
-        print("tapped")
-        guard let userPhoneNumber = UserDefaults.standard.string(forKey: "phoneNumber") else {
-            print("Failed to find phone number in local")
-            return
-        }
         
-        DatabaseManager.shared.findUser(with: userPhoneNumber) { [self] user in
-            guard let user = user else {
-                print("Failed find user")
-                return
+        viewModel.createAppointment(selectedDate: selectedDate, barber: barber, selectedTime: selectedTime, newAppointment: newAppointment) { result in
+            switch result {
+            case .success(let appointment):
+                print("Randevu oluşturuldu: \(appointment)")
+                self.navigationController?.popToRootViewController(animated: true)
+            case .failure(let error):
+                print("Hata oluştu: \(error.localizedDescription)")
             }
-            
-            guard let selectedDate = selectedDate,
-                  let selectedTime = selectedTime else {
-                print("data or time is empty")
-                return
-            }
-            newAppointment.barber = self.barber
-            newAppointment.owner = user
-            newAppointment.date = selectedDate.toISOString()
-            newAppointment.time = selectedTime
-            
-            // appointment olustur
-            DatabaseManager.shared.createAppointment(newAppointment: newAppointment) { success in
-                if success {
-//                    let destinationVC = VerificationViewController()
-//                    destinationVC.modalPresentationStyle = .fullScreen
-//                    self.present(destinationVC, animated: true)
-                    print("SUCCESFULLY CREATED")
-                } else {
-                    print("Error: When creating appointment")
-                }
-            }
-            
         }
-        
         
     }
+    
     
     @objc func didTapBack() {
         navigationController?.popViewController(animated: true)

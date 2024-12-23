@@ -105,8 +105,10 @@ class BarberVerificationViewController: UIViewController, UITextFieldDelegate {
                 case .success(let success):
                 UserDefaults.standard.set(barber.phoneNumber, forKey: "phoneNumber")
                 UserDefaults.standard.setValue(true, forKey: "isBusinessAccount")
-                let destinationVC = BarberDashboardViewController()
+                let destinationVC = BarberDashboardViewController(barber: barber)
                 let nav = UINavigationController(rootViewController: destinationVC)
+                let barber = Barber(name: barber.name, surname: barber.surname, phoneNumber: barber.phoneNumber, address: barber.address, workingHours: barber.workingHours, appointments: [])
+                LocalDataManager.shared.saveBarberToUserDefaults(barber: barber)
                 nav.modalPresentationStyle = .fullScreen
                 self.present(nav, animated: true)
             case .failure(let failure):

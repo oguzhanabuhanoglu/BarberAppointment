@@ -105,7 +105,6 @@ class BarberChoiceViewController: UIViewController, UICollectionViewDelegate, UI
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        viewModel.barberName = viewModel.barbers[indexPath.row].name
         let destinationVC = ServiseChoiceViewController()
         destinationVC.barber = viewModel.barbers[indexPath.row]
         navigationController?.pushViewController(destinationVC, animated: true)

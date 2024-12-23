@@ -9,12 +9,38 @@ import Foundation
 
 extension Date {
     
-    func toISOString() -> String {
+    func dateToString() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.calendar = Calendar(identifier: .gregorian)
         return formatter.string(from: self)
     }
     
+    func convertToFormattedDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.calendar = Calendar(identifier: .gregorian)
+        
+        // Date'i formatlı bir stringe çevir
+        let dateString = formatter.string(from: self)
+        
+        // Oluşan string'i tekrar Date'e çevir
+        return formatter.date(from: dateString)
+    }
+
 }
+
+
+extension String {
+    func toDate() -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.calendar = Calendar(identifier: .gregorian)
+        return formatter.date(from: self)
+    }
+}
+
+

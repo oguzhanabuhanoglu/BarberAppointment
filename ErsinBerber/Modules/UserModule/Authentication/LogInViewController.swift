@@ -164,7 +164,7 @@ class LogInViewController: UIViewController, UITableViewDelegate, UITableViewDat
             return
         }
         let fullPhoneNumber = "\(selectedCountryCode)\(phoneNumber)"
-        
+        UserDefaults.standard.set(fullPhoneNumber, forKey: "phoneNumber")
         DatabaseManager.shared.findUser(with: fullPhoneNumber) { user in
             
             if let user = user {

@@ -26,10 +26,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     self.setRootViewController(FirstViewController())
                 } else {
                     let isBusinessAccount = UserDefaults.standard.bool(forKey: "isBusinessAccount")
+                    let mock = Barber(name: "Mock", surname: "Mock", phoneNumber: "Mock", address: "Mock", workingHours: "Mock", appointments: [])
                     if isBusinessAccount {
-                        self.setRootViewController(BarberDashboardViewController()) // Berber için
+                        self.setRootViewController(BarberDashboardViewController(barber: mock)) // Berber için
                     } else {
-                        self.setRootViewController(ChooseBarberViewController()) // Kullanıcı için
+                        self.setRootViewController(BarberChoiceViewController()) // Kullanıcı için
                     }
                 }
             }

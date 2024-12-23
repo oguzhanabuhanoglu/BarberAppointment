@@ -16,7 +16,7 @@ class DatabaseManager {
     
     private init() {}
     
-    // MARK: - Create user
+    // MARK: - USER
     public func createNewUser(newUser: User, completion: @escaping (Bool) -> Void) {
         
         let userRef = database.collection("users").document(newUser.phoneNumber)
@@ -31,7 +31,19 @@ class DatabaseManager {
         }
     }
     
-    // MARK: - Get all barbers
+    public func findUser(with phoneNumber: String, completion: @escaping (User?) -> Void) {
+        let ref = database.collection("users")
+        ref.getDocuments { snapshot, error in
+            guard let users = snapshot?.documents.compactMap({ User(with: $0.data()) }), error == nil else {
+                completion(nil)
+                return
+            }
+            let user = users.first(where:{ $0.phoneNumber == phoneNumber})
+            completion(user)
+        }
+    }
+    
+    // MARK: - BARBERS
     public func getAllBarbers() -> AnyPublisher<[Barber], Error> {
         let ref = database.collection("barbers")
         
@@ -49,21 +61,6 @@ class DatabaseManager {
     }
     
     
-    
-    // MARK: - Find specific barber and user for authentication checks.
-    public func findUser(with phoneNumber: String, completion: @escaping (User?) -> Void) {
-        let ref = database.collection("users")
-        ref.getDocuments { snapshot, error in
-            guard let users = snapshot?.documents.compactMap({ User(with: $0.data()) }), error == nil else {
-                completion(nil)
-                return
-            }
-            let user = users.first(where:{ $0.phoneNumber == phoneNumber})
-            completion(user)
-        }
-    }
-    
-    
     public func findBarber(with phoneNumber: String, completion: @escaping (Barber?) -> Void) {
         let ref = database.collection("barbers")
         ref.getDocuments { snapshot, error in
@@ -77,20 +74,42 @@ class DatabaseManager {
         }
     }
     
-    // MARK: - Create Appointment
+    // MARK: - APPOINTMENT
     public func createAppointment(newAppointment: Appointment, completion: @escaping (Bool) -> Void) {
-        let appointmentRef = database.collection("appointments").document(newAppointment.date!)
-        
-        guard let data = newAppointment.asDictionary() else {
-            completion(false)
-            return
-        }
-        
-        appointmentRef.setData(data) { error in
-            completion(error == nil)
-        }
-        
-        
+
+           let barberRef = database.collection("allAppointments").document(newAppointment.barber!.name)
+           
+          
+           let appointmentRef = barberRef.collection("appointments").document()
+           
+           guard let data = newAppointment.asDictionary() else {
+               completion(false)
+               return
+           }
+           
+           appointmentRef.setData(data) { error in
+               completion(error == nil)
+           }
     }
+    
+    public func getAppointmentsForBarber(barberName: String) -> AnyPublisher<[Appointment], Never> {
+        let ref = database.collection("allAppointments").document(barberName).collection("appointments")
+
+        return Future { promise in
+            ref.getDocuments { snapshot, error in
+                guard let appointments = snapshot?.documents.compactMap({ Appointment(with: $0.data()) }), error == nil else {
+                    promise(.failure(error as! Never)) 
+                    return
+                }
+    
+                promise(.success(appointments))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+    
+
+    
+    
 }
 

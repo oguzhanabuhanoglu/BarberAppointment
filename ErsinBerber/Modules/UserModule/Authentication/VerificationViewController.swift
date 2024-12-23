@@ -108,7 +108,7 @@ class VerificationViewController: UIViewController, UITextFieldDelegate {
             case .success(let success):
                 UserDefaults.standard.set(user.phoneNumber, forKey: "phoneNumber")
                 UserDefaults.standard.set(false, forKey: "isBusinessAccount")
-                let destinationVC = ChooseBarberViewController()
+                let destinationVC = BarberChoiceViewController()
                 let nav = UINavigationController(rootViewController: destinationVC)
                 nav.modalPresentationStyle = .fullScreen
                 self.present(nav, animated: true)

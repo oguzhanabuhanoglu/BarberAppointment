@@ -79,7 +79,7 @@ class ServiseChoiceViewController: UIViewController {
         
         continueButton.addTarget(self, action: #selector(didTapContinue), for: .touchUpInside)
         view.addSubview(continueButton)
-        continueButton.frame = CGRect(x: width * 0.05, y: bread.frame.maxY + 15, width: width * 0.9, height: 55)
+        continueButton.frame = CGRect(x: width * 0.05, y: bread.frame.maxY + 25, width: width * 0.9, height: 55)
     }
     
     
